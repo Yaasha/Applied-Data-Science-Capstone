@@ -59,8 +59,12 @@ def get_pie_chart(entered_site):
         title='Launch Site successes')
         return fig
     else:
-        fig = px.pie(spacex_df[spacex_df["Launch Site"] == entered_site], values='class', 
-        names='class', 
+        df = spacex_df.loc[spacex_df["Launch Site"] == entered_site, ["class"]]
+        df["label"] = df["class"].apply(lambda x: "Failure" if x == 0 else "Success")
+        df["class"] = df["class"].apply(lambda x: 2 if x == 0 else x)
+        fig = px.pie(df,
+        values='class', 
+        names='label', 
         title=f'Launch Site success rate for {entered_site}')
         return fig
 
@@ -70,16 +74,16 @@ def get_pie_chart(entered_site):
               [Input(component_id='site-dropdown', component_property='value'),
                Input(component_id="payload-slider", component_property="value")])
 def get_scatter_chart(entered_site, slider):
-    filtered_df = spacex_df
+    filtered_df = spacex_df[(spacex_df["Payload Mass (kg)"] > slider[0]) & (spacex_df["Payload Mass (kg)"] < slider[1])]
     if entered_site == 'ALL':
-        fig = px.scatter(spacex_df,
+        fig = px.scatter(filtered_df,
         x='Payload Mass (kg)', 
         y="class",
         color="Booster Version Category",
         title='Correlation between payload and success for all sites')
         return fig
     else:
-        fig = px.pie(spacex_df[spacex_df["Launch Site"] == entered_site],
+        fig = px.scatter(filtered_df[filtered_df["Launch Site"] == entered_site],
         x='Payload Mass (kg)', 
         y="class",
         color="Booster Version Category",
